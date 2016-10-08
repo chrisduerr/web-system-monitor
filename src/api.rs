@@ -2,29 +2,25 @@ use std::process::Command;
 use json::JsonValue;
 use regex::Regex;
 
-fn get_cpu_usage() -> JsonValue {
+fn get_top_out() -> String {
+    let double_top = Command::new("top").args(&["-bn2", "-d", "0.5"]).output().unwrap();
+    let double_top = String::from_utf8_lossy(&double_top.stdout).to_string();
+    double_top.split("top - ").last().unwrap().to_string()
+}
+
+fn get_cpu_usage(top_out: &String) -> JsonValue {
     let mut cpus_data = JsonValue::new_object();
 
-    let cpu_out = Command::new("grep").args(&["cpu", "/proc/stat"]).output().unwrap();
-    let cpu_out = String::from_utf8_lossy(&cpu_out.stdout).to_string();
-
-    let cpu_reg = Regex::new("cpu.*? ([0-9]+) [0-9]+ ([0-9]+) ([0-9]+)").unwrap();
-    for (i, caps) in cpu_reg.captures_iter(&cpu_out).enumerate() {
-        if i == 0 {
-            cpus_data["all"] = "".into();
-        } else {
-            cpus_data[format!("thread{}", (i - 1))] = "".into();
-        }
+    let cpu_reg = Regex::new("Cpu[0-9].*?([0-9]{1,3})\\[").unwrap();
+    for (i, caps) in cpu_reg.captures_iter(&top_out).enumerate() {
+        cpus_data[format!("thread{}", i)] = caps.at(1).unwrap().into();
     }
 
     cpus_data
 }
 
-fn get_ram_usage() -> JsonValue {
+fn get_ram_usage(top_out: &String) -> JsonValue {
     let mut ram_data = JsonValue::new_object();
-
-    let top_out = Command::new("top").arg("-bn1").output().unwrap();
-    let top_out = String::from_utf8_lossy(&top_out.stdout).to_string();
 
     let ram_reg = Regex::new("Mem.*?([0-9]*\\.[0-9*])/([0-9]*\\.[0-9]*)").unwrap();
     for caps in ram_reg.captures_iter(&top_out) {
@@ -90,8 +86,10 @@ fn get_network_usage() -> JsonValue {
 pub fn get_raw_data() -> String {
     let mut raw_data = JsonValue::new_object();
 
-    raw_data["cpu"] = get_cpu_usage();
-    raw_data["ram"] = get_ram_usage();
+    let top_out = get_top_out();
+
+    raw_data["cpu"] = get_cpu_usage(&top_out);
+    raw_data["ram"] = get_ram_usage(&top_out);
     raw_data["temps"] = get_temps();
     raw_data["network"] = get_network_usage();
 
