@@ -11,10 +11,14 @@ fn get_top_out() -> String {
 fn get_cpu_usage(top_out: &String) -> JsonValue {
     let mut cpus_data = JsonValue::new_object();
 
+    let mut avg = (0.0, 0);
     let cpu_reg = Regex::new("Cpu[0-9].*?([0-9]{1,3})\\[").unwrap();
     for (i, caps) in cpu_reg.captures_iter(&top_out).enumerate() {
+        avg.0 += caps.at(1).unwrap().parse::<f64>().unwrap();
+        avg.1 += 1;
         cpus_data[format!("thread{}", i)] = caps.at(1).unwrap().into();
     }
+    cpus_data["avg"] = (avg.0 / f64::from(avg.1)).into();
 
     cpus_data
 }
@@ -37,7 +41,7 @@ fn get_cpu_temps(sensors_out: &String) -> JsonValue {
     let bundle_temp_reg = Regex::new("Physical.*?([+-][0-9]*\\.[0-9]*)°C").unwrap();
     let core_temp_reg = Regex::new("Core.*?([+-][0-9]*\\.[0-9]*)°C").unwrap();
 
-    cpu_temp_data["all"] = bundle_temp_reg.captures(sensors_out).unwrap().at(1).unwrap().into();
+    cpu_temp_data["avg"] = bundle_temp_reg.captures(sensors_out).unwrap().at(1).unwrap().into();
     for (i, caps) in core_temp_reg.captures_iter(sensors_out).enumerate() {
         cpu_temp_data[format!("core{}", i)] = caps.at(1).unwrap().into();
     }
