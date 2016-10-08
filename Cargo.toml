@@ -1,0 +1,9 @@
+[package]
+name = "web-system-monitor"
+version = "0.1.0"
+authors = ["Christian Dürr <programming@undeadleech.de>"]
+
+[dependencies]
+json = "0.10"
+regex = "0.1"
+nickel = "0.9"
