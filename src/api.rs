@@ -38,8 +38,8 @@ fn get_ram_usage(top_out: &String) -> JsonValue {
 fn get_cpu_temps(sensors_out: &String) -> JsonValue {
     let mut cpu_temp_data = JsonValue::new_object();
 
-    let bundle_temp_reg = Regex::new("Physical.*?([+-][0-9]*\\.[0-9]*)°C").unwrap();
-    let core_temp_reg = Regex::new("Core.*?([+-][0-9]*\\.[0-9]*)°C").unwrap();
+    let bundle_temp_reg = Regex::new("Physical.*?[+-]([0-9]*\\.[0-9]*)°C").unwrap();
+    let core_temp_reg = Regex::new("Core.*?[+-]([0-9]*\\.[0-9]*)°C").unwrap();
 
     cpu_temp_data["avg"] = bundle_temp_reg.captures(sensors_out).unwrap().at(1).unwrap().into();
     for (i, caps) in core_temp_reg.captures_iter(sensors_out).enumerate() {
@@ -52,7 +52,7 @@ fn get_cpu_temps(sensors_out: &String) -> JsonValue {
 fn get_gpu_temps(sensors_out: &String) -> JsonValue {
     let mut gpu_temp_data = JsonValue::new_object();
 
-    let gpu_temp_reg = Regex::new("temp.*?([+-][0-9]*\\.[0-9]*)°C.*hyst").unwrap();
+    let gpu_temp_reg = Regex::new("temp.*?[+-]([0-9]*\\.[0-9]*)°C.*hyst").unwrap();
     for (i, caps) in gpu_temp_reg.captures_iter(sensors_out).enumerate() {
         gpu_temp_data[format!("gpu{}", i)] = caps.at(1).unwrap().into();
     }

@@ -1,31 +1,3 @@
-function get_data_async(theUrl) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            update(xmlHttp.responseText);
-    }
-    xmlHttp.open("GET", theUrl, true);
-    xmlHttp.send(null);
-}
-
-function sleep(time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-}
-
-function update(response) {
-    var responseJSON = JSON.parse(response);
-    var cpu_avg = Math.trunc(responseJSON["cpu"]["avg"]);
-    document.getElementById("cpu_label").textContent = cpu_avg + "%";
-    document.getElementById("cpu_path").setAttribute('d', getPathFromPercentage(cpu_avg));
-
-    document.getElementById("testdiv").innerText = response;
-
-    sleep(100).then(() => get_data_async("/get_raw_data"));
-}
-
-get_data_async("/get_raw_data");
-
-
 // ----- GRAPH STUFF -----
 var zeroPercPoint = [25, 85];
 var hundredPercPoint = [75, 85];
@@ -75,3 +47,95 @@ function getPathFromPercentage(percentage) {
   }
   return "M25,85 a40,40 0 1,1 " + absolutePosition[0] + "," + absolutePosition[1];
 }
+
+
+// ----- UPDATE AND CREATE GRAPHS -----
+function createGraph(name) {
+    var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("id", name + "_label");
+    text.setAttribute("x", "50%");
+    text.setAttribute("y", centerPoint[1]);
+    text.setAttribute("dy", ".3em");
+
+    var foreground_path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    foreground_path.setAttribute("class", "foreground-path");
+    foreground_path.setAttribute("id", name + "_path");
+    foreground_path.setAttribute("d", "M25,85 a40,40 0 1,1 50,0");
+    foreground_path.setAttribute("stroke-width", "15");
+
+    var background_path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    background_path.setAttribute("class", "background-path");
+    background_path.setAttribute("d", "M25,85 a40,40 0 1,1 50,0");
+    background_path.setAttribute("stroke-width", "15");
+
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "100%");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.appendChild(background_path);
+    svg.appendChild(foreground_path);
+    svg.appendChild(text);
+
+    var label = document.createElement("div");
+    label.className = "graph-label";
+    label.innerHTML = name;
+
+    var container = document.createElement("div");
+    container.className = "graph-container";
+    container.appendChild(svg);
+    container.appendChild(label);
+
+    return container;
+}
+
+function get_data_async(theUrl) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            update(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", theUrl, true);
+    xmlHttp.send(null);
+}
+
+function sleep(time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+function updateElement(name, percentage) {
+    document.getElementById(name + "_label").textContent = percentage;
+    document.getElementById(name + "_path").setAttribute('d', getPathFromPercentage(percentage));
+}
+
+function update(response) {
+    var responseJSON = JSON.parse(response);
+
+    var cpu_avg = Math.trunc(responseJSON["cpu"]["avg"]);
+    updateElement("cpu", cpu_avg);
+
+    var ram = Math.trunc(responseJSON["ram"]["current"]);
+    updateElement("ram", ram);
+
+    var cpu_temp = Math.trunc(responseJSON["temps"]["cpu"]["avg"]);
+    updateElement("cpu_temp", cpu_temp);
+
+    var gpu_temp = Math.trunc(responseJSON["temps"]["gpu"]["gpu0"]);
+    updateElement("gpu_temp", gpu_temp);
+
+    document.getElementById("testdiv").innerText = response;
+
+    sleep(1000).then(() => get_data_async("/get_raw_data"));
+}
+
+function setupAllGraphs() {
+    var bod = document.body;
+    bod.appendChild(createGraph("cpu"));
+    bod.appendChild(createGraph("ram"));
+    bod.appendChild(createGraph("cpu_temp"));
+    bod.appendChild(createGraph("gpu_temp"));
+
+    get_data_async("/get_raw_data");
+}
+
+setupAllGraphs();

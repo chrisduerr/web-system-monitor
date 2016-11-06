@@ -1,12 +1,58 @@
 body {
     width: 100vw;
     height: 100vh;
+    margin: unset;
+    background-color: #121212;
+    color: #616161;
+}
+
+.background-path {
+    stroke: rgba(38, 38, 38, 0.5);
+    fill: none;
+}
+
+.foreground-path {
+    stroke: rgb(38, 38, 38);
+    fill: none;
 }
 
 .graph-container {
     width: 10vw;
+    display: inline-block;
+}
+
+text {
+    text-anchor: middle;
+    pointer-events: auto;
+    fill: #616161;
+    font-size: 1.2em;
 }
 
 .graph-label {
     text-align: center;
+    font-size: 1.4em;
+}
+
+.search-wrap {
+    max-width: 600px;
+    width: 65%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+form {
+    border: 1px solid black;
+    background-color: #262626;
+    padding-left: 0.6em;
+    padding-right: 0.6em;
+    height: 2.8em;
+}
+
+input {
+    width: 100%;
+    height: 97%;
+    font-size: 1.2em;
+    background-color: #262626;
+    border: none;
+    margin: 0;
 }
