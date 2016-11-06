@@ -1,0 +1,12 @@
+body {
+    width: 100vw;
+    height: 100vh;
+}
+
+.graph-container {
+    width: 10vw;
+}
+
+.graph-label {
+    text-align: center;
+}

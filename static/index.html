@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <div id="testdiv">
+        <div id="testdiv"></div>
+        <div class="graph-container">
+            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAsoectRatio="none">
+            <path d="M25,85 a40,40 0 1,1 50,0" fill="none" stroke="rgba(144, 169, 98, 0.5)" stroke-width="15" />
+            <path id="cpu_path" fill="none" stroke="rgb(144, 169, 98)" stroke-width="15" />
+            <text id="cpu_label" x="50%" y="50%" alignment-baseline="middle" text-anchor="middle" dx="0.15em" dy="0.35em" font-size="20" fill="#262626" />
+            </svg>
+            <div class="graph-label">CPU</div>
         </div>
         <script src="/update_data.js"></script>
     </body>
